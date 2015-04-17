@@ -1,0 +1,15 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<form action="/Home/CalculationJob/" method="post">
+    <input type="submit" value="Do Calculation" />
+    @if ((bool?)ViewBag.Success == true)
+    {
+        <p style="color:green; font-size:30px; margin-top:20px">Operation completed successfully</p>
+    }
+</form>
+
