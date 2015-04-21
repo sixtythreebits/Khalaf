@@ -6,20 +6,80 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Threading.Tasks;
 using Server3.Models;
+using System.Configuration;
+using Core;
 
 namespace Server3.Controllers
 {
     public class MainController : ApiController
     {
         [HttpPost]
-        [Route("save-result/")]
-        public async Task<HttpResponseMessage> DoCalculationJob(RecievedResult Result)
+        [Route("get-access/")]
+        public async Task<HttpResponseMessage> GetAccess(SimpleInput Input)
         {
-            await Task.Run(() =>
+            var Result = await Task.Run(() =>
             {
-                // Store result code goes here
+                // We need try - catch block here to detect whether the decryption of message went successfully
+                // Decrypt() method throws an exception if it can't decrypt a message
+                try
+                {
+                    // Decrypting message received from Khalaf Server
+                    var DecryptedMessage = Input.Value.Decrypt(ConfigurationManager.AppSettings["KeyServer3"]);
+
+                    // 5 Hour access key
+                    return DateTime.Now.AddHours(5).ToString().Encrypt(ConfigurationManager.AppSettings["KeyServer3"]);
+                }
+                catch
+                {
+                    return null;
+                }
             });
-            return Request.CreateResponse(HttpStatusCode.OK);
+
+            if (Result == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.Forbidden);
+            }
+            else
+            {
+                return Request.CreateResponse(HttpStatusCode.OK, Result);
+            }
+        }
+
+        [HttpPost]
+        [Route("do-some-job/")]
+        public async Task<HttpResponseMessage> DoSomeJob(SimpleInput Input)
+        {
+            var Result = await Task.Run(() =>
+            {
+                // We need try - catch block here to detect whether the decryption of message went successfully
+                // Decrypt() method throws an exception if it can't decrypt a message
+                try
+                {
+                    
+                    // Decrypting AccessKey and checking for expiration
+                    if (Convert.ToDateTime(Input.Value.Decrypt(ConfigurationManager.AppSettings["KeyServer3"])) > DateTime.Now)
+                    {
+                        return (int?)(5 + 5);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                catch
+                {
+                    return null;
+                }
+            });
+
+            if (Result == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.Forbidden);
+            }
+            else
+            {
+                return Request.CreateResponse(HttpStatusCode.OK, Result);
+            }
         }
     }
 }

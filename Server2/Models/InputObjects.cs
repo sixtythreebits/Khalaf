@@ -6,9 +6,8 @@ using System.Web;
 
 namespace Server2.Models
 {
-    public class CalculationJobInput
+    public class SimpleInput
     {
-        public int? a { set; get; }
-        public int? b { set; get; }
-    }
+        public string Value { set; get; }
+    }  
 }

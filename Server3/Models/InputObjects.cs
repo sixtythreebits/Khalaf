@@ -5,8 +5,8 @@ using System.Web;
 
 namespace Server3.Models
 {
-    public class RecievedResult
+    public class SimpleInput
     {
-        public int? result { set; get; }
+        public string Value { set; get; }
     }
 }
