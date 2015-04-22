@@ -1,0 +1,13 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<form action="/Home/DoJob/" method="post">
+    <input type="submit" value="Do Job" />
+    @if(ViewBag.Success==true)
+    {
+        <p style="color:green; font-size:25px;">Success</p>
+    }
+</form>
+

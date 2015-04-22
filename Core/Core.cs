@@ -9,7 +9,7 @@ namespace Core
 {
     public static class Extensions
     {
-        public static string Decrypt(this string Message, string Passphrase)
+        public static string DecryptMAC(this string Message, string Passphrase)
         {
             byte[] Results;
             UTF8Encoding UTF8 = new UTF8Encoding();
@@ -39,7 +39,7 @@ namespace Core
             return UTF8.GetString(Results);
         }
 
-        public static string Encrypt(this string Message, string Passphrase)
+        public static string EncryptMAC(this string Message, string Passphrase)
         {
             byte[] Results;
             UTF8Encoding UTF8 = new UTF8Encoding();
@@ -67,14 +67,6 @@ namespace Core
             }
 
             return Convert.ToBase64String(Results);
-        }
-
-        public static string MACEncrypt(this string Message, string Passphrase)
-        {
-            var PassBytes = Encoding.UTF8.GetBytes(Passphrase);
-            var MAC = new MACTripleDES(PassBytes);            
-            var MacResult = MAC.ComputeHash(Encoding.UTF8.GetBytes(Message));
-            return BitConverter.ToString(MacResult);
         }
     }
 }
