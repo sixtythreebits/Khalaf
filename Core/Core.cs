@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -9,64 +10,100 @@ namespace Core
 {
     public static class Extensions
     {
-        public static string DecryptMAC(this string Message, string Passphrase)
+        public static string DecryptText(this string input, string password)
         {
-            byte[] Results;
-            UTF8Encoding UTF8 = new UTF8Encoding();
+            // Get the bytes of the string
+            byte[] bytesToBeDecrypted = Convert.FromBase64String(input);
+            byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+            passwordBytes = SHA256.Create().ComputeHash(passwordBytes);
 
-            MD5CryptoServiceProvider HashProvider = new MD5CryptoServiceProvider();
-            byte[] TDESKey = HashProvider.ComputeHash(UTF8.GetBytes(Passphrase));
+            byte[] bytesDecrypted = AES_Decrypt(bytesToBeDecrypted, passwordBytes);
 
-            TripleDESCryptoServiceProvider TDESAlgorithm = new TripleDESCryptoServiceProvider();
+            string result = Encoding.UTF8.GetString(bytesDecrypted);
 
-            TDESAlgorithm.Key = TDESKey;
-            TDESAlgorithm.Mode = CipherMode.ECB;
-            TDESAlgorithm.Padding = PaddingMode.PKCS7;
-
-            byte[] DataToDecrypt = Convert.FromBase64String(Message);
-
-            try
-            {
-                ICryptoTransform Decryptor = TDESAlgorithm.CreateDecryptor();
-                Results = Decryptor.TransformFinalBlock(DataToDecrypt, 0, DataToDecrypt.Length);
-            }
-            finally
-            {
-                TDESAlgorithm.Clear();
-                HashProvider.Clear();
-            }
-
-            return UTF8.GetString(Results);
+            return result;
         }
 
-        public static string EncryptMAC(this string Message, string Passphrase)
+        public static string EncryptText(this string input, string password)
         {
-            byte[] Results;
-            UTF8Encoding UTF8 = new UTF8Encoding();
+            // Get the bytes of the string
+            byte[] bytesToBeEncrypted = Encoding.UTF8.GetBytes(input);
+            byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
 
-            MD5CryptoServiceProvider HashProvider = new MD5CryptoServiceProvider();
-            byte[] TDESKey = HashProvider.ComputeHash(UTF8.GetBytes(Passphrase));
+            // Hash the password with SHA256
+            passwordBytes = SHA256.Create().ComputeHash(passwordBytes);
 
-            TripleDESCryptoServiceProvider TDESAlgorithm = new TripleDESCryptoServiceProvider();
+            byte[] bytesEncrypted = AES_Encrypt(bytesToBeEncrypted, passwordBytes);
 
-            TDESAlgorithm.Key = TDESKey;
-            TDESAlgorithm.Mode = CipherMode.ECB;
-            TDESAlgorithm.Padding = PaddingMode.PKCS7;
+            string result = Convert.ToBase64String(bytesEncrypted);
 
-            byte[] DataToEncrypt = UTF8.GetBytes(Message);
+            return result;
+        }
 
-            try
+        public static byte[] AES_Encrypt(byte[] bytesToBeEncrypted, byte[] passwordBytes)
+        {
+            byte[] encryptedBytes = null;
+
+            // Set your salt here, change it to meet your flavor:
+            // The salt bytes must be at least 8 bytes.
+            byte[] saltBytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+
+            using (MemoryStream ms = new MemoryStream())
             {
-                ICryptoTransform Encryptor = TDESAlgorithm.CreateEncryptor();
-                Results = Encryptor.TransformFinalBlock(DataToEncrypt, 0, DataToEncrypt.Length);
-            }
-            finally
-            {
-                TDESAlgorithm.Clear();
-                HashProvider.Clear();
+                using (RijndaelManaged AES = new RijndaelManaged())
+                {
+                    AES.KeySize = 256;
+                    AES.BlockSize = 128;
+
+                    var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000);
+                    AES.Key = key.GetBytes(AES.KeySize / 8);
+                    AES.IV = key.GetBytes(AES.BlockSize / 8);
+
+                    AES.Mode = CipherMode.CBC;
+
+                    using (var cs = new CryptoStream(ms, AES.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(bytesToBeEncrypted, 0, bytesToBeEncrypted.Length);
+                        cs.Close();
+                    }
+                    encryptedBytes = ms.ToArray();
+                }
             }
 
-            return Convert.ToBase64String(Results);
+            return encryptedBytes;
+        }
+
+        public static byte[] AES_Decrypt(byte[] bytesToBeDecrypted, byte[] passwordBytes)
+        {
+            byte[] decryptedBytes = null;
+
+            // Set your salt here, change it to meet your flavor:
+            // The salt bytes must be at least 8 bytes.
+            byte[] saltBytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (RijndaelManaged AES = new RijndaelManaged())
+                {
+                    AES.KeySize = 256;
+                    AES.BlockSize = 128;
+
+                    var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000);
+                    AES.Key = key.GetBytes(AES.KeySize / 8);
+                    AES.IV = key.GetBytes(AES.BlockSize / 8);
+
+                    AES.Mode = CipherMode.CBC;
+
+                    using (var cs = new CryptoStream(ms, AES.CreateDecryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(bytesToBeDecrypted, 0, bytesToBeDecrypted.Length);
+                        cs.Close();
+                    }
+                    decryptedBytes = ms.ToArray();
+                }
+            }
+
+            return decryptedBytes;
         }
     }
 }

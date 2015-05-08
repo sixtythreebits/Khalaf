@@ -22,10 +22,10 @@ namespace MCI.Controllers
             try
             {
                 // Decrypting message received from Khalaf Server
-                var DecryptedMessage = Input.Value.DecryptMAC(ConfigurationManager.AppSettings["KeyMCI"]);
+                var DecryptedMessage = Input.Value.DecryptText(ConfigurationManager.AppSettings["KeyMCI"]);
 
-                // 5 Hour access key
-                Result = DateTime.Now.AddHours(5).ToString().EncryptMAC(ConfigurationManager.AppSettings["KeyMCI"]);
+                // 5 minute access key
+                Result = DateTime.Now.AddMinutes(5).ToString().EncryptText(ConfigurationManager.AppSettings["KeyMCI"]);
             }
             catch{ }
 
@@ -50,7 +50,7 @@ namespace MCI.Controllers
             {
 
                 // Decrypting AccessKey and checking for expiration
-                if (Convert.ToDateTime(Input.Value.DecryptMAC(ConfigurationManager.AppSettings["KeyMCI"])) > DateTime.Now)
+                if (Convert.ToDateTime(Input.Value.DecryptText(ConfigurationManager.AppSettings["KeyMCI"])) > DateTime.Now)
                 {
                     Result = 5 + 5;
                 }
@@ -65,6 +65,6 @@ namespace MCI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.OK, Result);
             }
-        }
+        }        
     }
 }

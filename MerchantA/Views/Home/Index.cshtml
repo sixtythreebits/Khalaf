@@ -3,11 +3,27 @@
     ViewBag.Title = "Index";
 }
 
-<form action="/Home/DoJob/" method="post">
-    <input type="submit" value="Do Job" />
-    @if(ViewBag.Success==true)
+<form action="/Home/Authentication/" method="post">
+    <input type="submit" value="Authenticate" />
+    <br /><br />    
+    @if (ViewBag.Success == true)
     {
-        <p style="color:green; font-size:25px;">Success</p>
+        <p>@Html.Raw(ViewBag.Message)</p>
     }
 </form>
-
+<form action="/Home/Calculate/" method="post">
+    <input type="submit" value="Calculate" />
+    @if(ViewBag.NotTrusted == true)
+    {
+        <p style="color:red;">You are not trusted!</p>
+    }
+    @if (ViewBag.CalcSuccess == true)
+    {
+        <p style="color:green;">You have successfully accessed MCI and got the result!</p>
+        <p>Expiration Date: <strong>@ViewBag.ExpDate</strong></p>
+    }
+</form>
+<br />
+<form action="/Home/Logout/" method="post">
+    <input type="submit" value="Log Out" />
+</form>

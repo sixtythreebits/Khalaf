@@ -20,15 +20,15 @@ namespace NCDC.Controllers
             try
             {
                 //Check if KhalafServer is asking for an access
-                if (Input.Value.DecryptMAC(ConfigurationManager.AppSettings["KeyMerchantA"]) == ConfigurationManager.AppSettings["MerchantAServerID"])
+                if (Input.Value.DecryptText(ConfigurationManager.AppSettings["KeyMerchantA"]) == ConfigurationManager.AppSettings["MerchantAServerID"])
                 {
                     Result = JsonConvert.SerializeObject(
                     new
                     {
                         Message1 = "Message1",
-                        Message2 = "Message2".EncryptMAC(ConfigurationManager.AppSettings["KeyNCDC"])
+                        Message2 = "Message2".EncryptText(ConfigurationManager.AppSettings["KeyNCDC"])
                     }
-                    , Formatting.None).EncryptMAC(ConfigurationManager.AppSettings["KeyMerchantA"]);
+                    , Formatting.None).EncryptText(ConfigurationManager.AppSettings["KeyMerchantA"]);
                 }
             }
             catch { }
@@ -53,9 +53,9 @@ namespace NCDC.Controllers
             try
             {
                 // Decrypting message received from Khalaf Server
-                var DecryptedMessage = Input.Value.DecryptMAC(ConfigurationManager.AppSettings["KeyNCDC"]);
+                var DecryptedMessage = Input.Value.DecryptText(ConfigurationManager.AppSettings["KeyNCDC"]);
 
-                Result = "Message for Server 3".EncryptMAC(ConfigurationManager.AppSettings["KeyMCI"]);
+                Result = "Message for Server 3".EncryptText(ConfigurationManager.AppSettings["KeyMCI"]);
             }
             catch { }
 
