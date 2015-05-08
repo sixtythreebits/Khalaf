@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
@@ -25,8 +26,8 @@ namespace NCDC.Controllers
                     Result = JsonConvert.SerializeObject(
                     new
                     {
-                        Message1 = "Message1",
-                        Message2 = "Message2".EncryptText(ConfigurationManager.AppSettings["KeyNCDC"])
+                        Message1 = Guid.NewGuid().ToString(),
+                        Message2 = Guid.NewGuid().ToString().EncryptText(ConfigurationManager.AppSettings["KeyNCDC"])
                     }
                     , Formatting.None).EncryptText(ConfigurationManager.AppSettings["KeyMerchantA"]);
                 }
@@ -55,7 +56,7 @@ namespace NCDC.Controllers
                 // Decrypting message received from Khalaf Server
                 var DecryptedMessage = Input.Value.DecryptText(ConfigurationManager.AppSettings["KeyNCDC"]);
 
-                Result = "Message for Server 3".EncryptText(ConfigurationManager.AppSettings["KeyMCI"]);
+                Result = Guid.NewGuid().ToString().EncryptText(ConfigurationManager.AppSettings["KeyMCI"]);
             }
             catch { }
 
